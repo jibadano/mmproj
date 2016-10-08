@@ -1,0 +1,37 @@
+<div class="row">
+<div class="col-lg-7 text-center">
+	<div class="text-left" id="newmatch">
+		  <h2 id="name" >{{match.name}}</h2>
+		  <label for="date">Date</label>
+		  <p>{{match.date | date}}</p>
+		  <label for="field">Field</label>
+		  <p>{{match._field.name}}</p>
+		  <label>Players</label>
+			<table class="table table-hover table-condensed">
+			<tbody>
+				<tr *ngFor="let player of match.players">
+					<td>{{player._user.email}}</td>
+					<td class="table-buttons">
+						<div class="btn-group">
+							<button type="submit" class="btn btn-xs btn-default disabled">Admin</button>
+							<button type="button" class="btn btn-xs btn-primary disabled">Alter</button>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>		
+	</div>
+</div>
+<div class="col-lg-5 text-center">
+	<div class="row">
+		<map *ngIf="match._field" [field]="match._field">Loading...</map>
+	</div>
+</div>
+</div>
+<div class="row">
+	<div class="btn-group btn-footer">
+		<button type="submit" class="btn btn-default" (click)="confirm()">Confirm</button>
+		<button type="button" class="btn btn-primary" (click)="decline()">Decline</button>
+		<button type="button" class="btn btn-primary" (click)="return.emit(false)">Back</button>
+	</div>
+</div>

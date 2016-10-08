@@ -1,0 +1,14 @@
+// Coloque su configuración en este archivo para sobrescribir la configuración predeterminada y de usuario.
+{
+
+     "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/app/*.map":true,
+        "**/app/*.js":true,
+        "**/.gitignore":true
+    },
+    "editor.scrollBeyondLastLine": false
+}

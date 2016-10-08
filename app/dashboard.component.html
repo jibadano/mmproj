@@ -1,0 +1,55 @@
+<div *ngIf="nav=='myMatchs' || nav=='allMatchs'">
+	<div class="col-lg-7 text-left">
+		<div>
+			<div class="input-inline">
+				<div class="btn-group">
+					<button type="button" class="btn btn-primary" (click)="nav = 'allMatchs';pagination.rewind(); showMatchs()">All</button>
+					<button type="button" class="btn btn-primary" (click)="nav = 'myMatchs';pagination.rewind(); showMatchs()">My matchs</button>
+				</div>
+				<ul class="pager">
+					<li [class.disabled]="pagination.page==0"><a href="#" (click)="pagination.previous(); showMatchs()">Previous</a></li>
+					<li [class.disabled]="matchs && matchs.length < size"><a href="#" (click)="pagination.next(); showMatchs()">Next</a></li>
+				</ul>
+			</div>
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Field</th>
+						<th>Date</th>
+						<th>Players</th>
+						<th>Status</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let match of matchs" [class.selected]="match === selectedMatch" (click)="selectedMatch = match">
+						<td>{{match.name}}</td>
+						<td>{{match._field.name}}</td>
+						<td>{{match.date | date:'short'}}</td>
+						<td>{{match.players.length}}/{{2*match._field.size}}</td>
+						<td>{{match.status}}</td>
+						<td>
+							<div class="btn-group">
+								<button (click)="selectedMatch = match; nav = 'viewMatch'" type="button" class="btn btn-sm btn-primary" ><i class="fa fa-chevron-right"></i></button>
+								<button (click)="selectedMatch = match; nav = 'editMatch'" type="button" class="btn-sm btn btn-primary" ><i class="fa fa-pencil"></i></button>
+								<button type="button" (click)="removeMatch(match);" class="btn btn-sm btn-primary" ><i class="fa fa-close"></i></button>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="btn-group">
+				<button type="button" class="btn btn-primary" (click)="nav = 'newMatch'">Add</button>
+			</div>
+		</div>
+	</div>
+	<div class="col-lg-5 text-center">
+		<div class="row">
+			<map [field]="selectedMatch._field">Loading...</map>
+		</div>
+	</div>
+</div>
+<new-match *ngIf="nav == 'newMatch'" (return)="nav = 'allMatchs';  showMatchs()">Loading...</new-match>
+<new-match *ngIf="nav == 'editMatch'" (return)="nav = 'allMatchs';  showMatchs()" [match]="selectedMatch">Loading...</new-match>
+<view-match *ngIf="nav == 'viewMatch'" (return)="nav = 'allMatchs'; showMatchs()" [match]="selectedMatch">Loading...</view-match>

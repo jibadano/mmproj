@@ -1,0 +1,25 @@
+<nav id="mainNav" class="navbar navbar-default navbar-fixed-top">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+			</button>
+			<a class="navbar-brand page-scroll" href="#page-top">Too Match</a>
+		</div>
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="float: right;position: relative;top: 9px;">
+			<user-session *ngIf="services.user.email" (return)="nav = $event" (logOut)="services.logout();"></user-session>
+		</div>
+	</div>
+</nav>
+
+<header>
+	<div class="header-content">
+		<div class="header-content-inner">
+			<home *ngIf="!services.user.email" (loginSuccess)="services.user = $event"></home>
+			<div class="row">
+				<dashboard *ngIf="services.user.email && nav=='dashboard'" ></dashboard>
+				<groups *ngIf="nav=='groups'" (return)="nav = $event" ></groups>
+			</div>
+		</div>
+	</div>
+</header>

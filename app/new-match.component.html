@@ -1,0 +1,76 @@
+<form [formGroup]="formGroup" (ngSubmit)="addMatch(newMatch.status)">
+
+	<div class="row">
+		<div class="col-lg-7 text-center">
+			<div id="newmatch">
+				<div class="form-group">
+					<input id="name" formControlName="name" type="text" [(ngModel)]="newMatch.name" placeholder="Name" class="input-lg form-control">
+				</div>
+				<div *ngIf="formErrors.name" class="alert alert-danger">
+					{{ formErrors.name }}
+				</div>
+				<div class="form-group form-inline text-left">
+					<div class="form-group">
+						<input formControlName="date" id="date" type="date" [(ngModel)]="date" placeholder="Date" class="form-control"/>
+					</div>
+					<div class="form-group">
+						<input formControlName="time" type="time" [(ngModel)]="time" placeholder="Time" class="form-control">
+					</div>
+					<button type="button" class="btn btn-primary" (click)="newMatch.status = (newMatch.status ==='private')? 'public' : 'private';">{{newMatch.status}}</button>
+				</div>
+				<div *ngIf="formErrors.date" class="alert alert-danger">
+					{{ formErrors.date }}
+				</div>
+				<div class="form-group">
+					<input #searchBox formControlName="field" type="text" (focus)="users = []" (keyup)="searchFields(searchBox.value);onKeyEventField($event)"
+						[(ngModel)]="fieldNameSearch" placeholder="Field" class="form-control">
+					<ul class="list-group search-popup">
+						<li (click)="newMatch._field = field;fieldNameSearch = field.name; fields = []" *ngFor="let field of fields" class="list-group-item">{{field.name}}</li>
+					</ul>
+					<div *ngIf="formErrors.field" class="alert alert-danger">
+						{{ formErrors.field }}
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="player-input">
+						<input #searchBox2 formControlName="players" type="text" (focus)="fields = []" (keyup)="searchUsers(searchBox2.value);onKeyEventUser($event)"
+							[(ngModel)]="userEmailSearch" placeholder="Players" class="form-control players">
+						<button type="button" class="btn btn-xs btn-input btn-primary " *ngIf="selectedUser.email" (click)="addPlayer(selectedUser)">add</button>
+					</div>
+					<ul class="list-group search-popup">
+						<li (click)="selectedUser = user;userEmailSearch=user.email;users = []" *ngFor="let user of users" class="list-group-item">{{user.email}}</li>
+					</ul>
+				</div>
+
+				<table class="table table-hover table-condensed">
+					<tbody>
+						<tr *ngFor="let player of newMatch.players">
+							<td>{{player._user.email}}</td>
+							<td class="table-buttons">
+								<div class="btn-group">
+									<button [class.active]="player.admin" type="submit" class="btn btn-xs btn-default" (click)="player.admin = !player.admin">Admin</button>
+									<button [class.active]="player.alter" type="button" class="btn btn-xs btn-primary" (click)="player.alter = !player.alter">Alter</button>
+								</div>
+								<button type="button" class="btn btn-xs btn-primary" (click)="removePlayer(player)"><i class="fa fa-close"></i></button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+
+			</div>
+		</div>
+		<div class="col-lg-5 text-center">
+			<div class="row">
+				<map *ngIf="newMatch._field" [field]="newMatch._field">Loading...</map>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="btn-group btn-footer">
+			<button type="submit" class="btn btn-default">Add</button>
+			<button type="button" class="btn btn-primary" (click)="addMatch('draft')">save</button>
+			<button type="button" class="btn btn-primary" (click)="return.emit(false)">cancel</button>
+		</div>
+	</div>
+</form>
