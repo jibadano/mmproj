@@ -11,17 +11,37 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var app_service_1 = require('./app.service');
 var user_1 = require('./user');
+var forms_1 = require('@angular/forms');
 require('./rxjs-extensions');
 var HomeComponent = (function () {
-    function HomeComponent(services) {
+    function HomeComponent(services, fb) {
         this.services = services;
+        this.fb = fb;
+        this.nav = 'welcome';
         this.user = new user_1.User();
         this.loginSuccess = new core_1.EventEmitter();
+        this.formErrors = {
+            'email': '',
+            'password': ''
+        };
+        this.validationMessages = {
+            'email': {
+                'required': 'Email is required.',
+                'minlength': 'Email must be at least 4 characters long.',
+                'maxlength': 'Email cannot be more than 24 characters long.'
+            },
+            'password': {
+                'required': 'password is required.',
+                'minlength': 'password must be at least 4 characters long.',
+                'maxlength': 'password cannot be more than 24 characters long.'
+            }
+        };
     }
     ;
     HomeComponent.prototype.login = function () {
         var _this = this;
-        this.services.login(this.user).then(function () { return _this.loginSuccess.emit(_this.user); });
+        if (this.user.password != '' && this.user.email != '')
+            this.services.login(this.user).then(function () { return _this.loginSuccess.emit(_this.user); });
     };
     ;
     HomeComponent.prototype.logout = function () {
@@ -29,10 +49,48 @@ var HomeComponent = (function () {
     };
     HomeComponent.prototype.ngOnInit = function () {
         var _this = this;
+        this.buildForm();
         this.services.exec('getCurrentUser', {}).then(function (user) {
             if (user)
                 _this.loginSuccess.emit(user);
         });
+    };
+    HomeComponent.prototype.buildForm = function () {
+        var _this = this;
+        this.formGroup = this.fb.group({
+            'email': [this.user.email, [
+                    forms_1.Validators.required,
+                    forms_1.Validators.minLength(4),
+                    forms_1.Validators.maxLength(24)
+                ]
+            ],
+            'password': [this.user.password, [
+                    forms_1.Validators.required,
+                    forms_1.Validators.minLength(4),
+                    forms_1.Validators.maxLength(24)
+                ]
+            ]
+        });
+        this.formGroup.valueChanges
+            .subscribe(function (data) { return _this.onValueChanged(data); });
+        this.onValueChanged(); // (re)set validation messages now
+    };
+    HomeComponent.prototype.onValueChanged = function (data) {
+        if (!this.formGroup) {
+            return;
+        }
+        var form = this.formGroup;
+        for (var field in this.formErrors) {
+            // clear previous error message (if any)
+            this.formErrors[field] = '';
+            var control = form.get(field);
+            if (control && control.dirty && !control.valid) {
+                var messages = this.validationMessages[field];
+                for (var key in control.errors) {
+                    this.formErrors[field] += messages[key] + ' ';
+                }
+            }
+        }
     };
     __decorate([
         core_1.Input(), 
@@ -45,10 +103,11 @@ var HomeComponent = (function () {
     HomeComponent = __decorate([
         core_1.Component({
             selector: 'home',
-            template: "\n\t\t<div class=\"col-lg-4 col-lg-offset-4 text-center\">\n\t\t\t<form role=\"form\">\n\t\t\t\t<div class=\"form-group\">\n\t\t\t\t\t<input type=\"email\" [(ngModel)]=\"user.email\" placeholder=\"Email\" class=\"form-control\" id=\"email\" [ngModelOptions]=\"{standalone: true}\">\n\t\t\t\t</div>\n\t\t\t\t<div class=\"form-group\">\n\t\t\t\t\t<input type=\"password\" [(ngModel)]=\"user.password\" placeholder=\"Password\" class=\"form-control\" id=\"pwd\" [ngModelOptions]=\"{standalone: true}\">\n\t\t\t\t</div>\n\t\t\t\t<div class=\"checkbox\">\n\t\t\t\t\t<label><input type=\"checkbox\"> Remember me</label>\n\t\t\t\t</div>\n\t\t\t\t<button type=\"submit\" (click)=\"login()\" class=\"btn btn-default\">Submit</button>\n\t\t\t</form>\n\t\t</div>\n    ",
-            providers: [app_service_1.AppService]
+            templateUrl: 'app/home.component.html',
+            providers: [app_service_1.AppService],
+            directives: [forms_1.FORM_DIRECTIVES, forms_1.REACTIVE_FORM_DIRECTIVES]
         }), 
-        __metadata('design:paramtypes', [app_service_1.AppService])
+        __metadata('design:paramtypes', [app_service_1.AppService, forms_1.FormBuilder])
     ], HomeComponent);
     return HomeComponent;
 }());

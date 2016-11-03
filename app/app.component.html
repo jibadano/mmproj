@@ -11,15 +11,14 @@
 		</div>
 	</div>
 </nav>
+<home *ngIf="!services.user.email" (loginSuccess)="services.user = $event"></home>
 
-<header>
-	<div class="header-content">
-		<div class="header-content-inner">
-			<home *ngIf="!services.user.email" (loginSuccess)="services.user = $event"></home>
-			<div class="row">
+
+  <section id="about">
+        <div class="container">
+            <div class="row">
 				<dashboard *ngIf="services.user.email && nav=='dashboard'" ></dashboard>
 				<groups *ngIf="nav=='groups'" (return)="nav = $event" ></groups>
 			</div>
-		</div>
-	</div>
-</header>
+        </div>
+    </section>

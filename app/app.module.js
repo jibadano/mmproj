@@ -22,6 +22,7 @@ var players_component_1 = require('./players.component');
 var new_match_component_1 = require('./new-match.component');
 var view_match_component_1 = require('./view-match.component');
 var groups_component_1 = require('./groups.component');
+var menu_component_1 = require('./menu.component');
 var app_service_1 = require('./app.service');
 var AppModule = (function () {
     function AppModule() {
@@ -44,7 +45,8 @@ var AppModule = (function () {
                 players_component_1.PlayersComponent,
                 new_match_component_1.NewMatchComponent,
                 groups_component_1.GroupsComponent,
-                view_match_component_1.ViewMatchComponent
+                view_match_component_1.ViewMatchComponent,
+                menu_component_1.MenuComponent
             ],
             providers: [
                 app_service_1.AppService

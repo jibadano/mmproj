@@ -1,0 +1,3 @@
+<div class="btn-group">
+	<button *ngFor="let option of menuOptions" type="button" class="btn btn-primary" (click)="optionSelected.emit(option)">{{option}}</button>
+</div>

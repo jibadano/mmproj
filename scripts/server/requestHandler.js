@@ -30,7 +30,7 @@ function login(req, res) {
 			delete user.password;
 			req.session.user = user;
 		}
-		res.end((user || err)? JSON.stringify(user) : '{err: "Authentication failed}"');
+		res.end((user || err)? JSON.stringify(user) : '{err: "Authentication failed"}');
 	});
 }
 
@@ -48,7 +48,7 @@ function signin(req, res) {
 				
 				database.insertUser(authenticationData.user, function(err, user){
 					req.session.user = user;
-					return res.end((!user || err)? '{}' : '{err: "Registration failed"');
+					return res.end((!user || err)? '{}' : '{err: "Registration failed"}');
 				});
 			});
 		}

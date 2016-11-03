@@ -13,6 +13,7 @@ import { PlayersComponent }   from './players.component';
 import { NewMatchComponent }   from './new-match.component';
 import { ViewMatchComponent }   from './view-match.component';
 import { GroupsComponent }   from './groups.component';
+import { MenuComponent }   from './menu.component';
 
 import { AppService }   from './app.service';
 
@@ -33,7 +34,8 @@ import { AppService }   from './app.service';
     PlayersComponent,
     NewMatchComponent,
     GroupsComponent,
-    ViewMatchComponent
+    ViewMatchComponent,
+    MenuComponent
   ],
    providers: [
     AppService

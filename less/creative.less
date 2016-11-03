@@ -60,7 +60,8 @@ p {
 }
 
 section {
-    padding: 100px 0;
+    padding: 60px 0;
+    background-color: #6c6c6c;
 }
 
 aside {
@@ -320,6 +321,13 @@ header {
     .button-variant(white;@theme-primary;@theme-primary);
 }
 
+.btn:active:focus,
+.btn.active.focus,
+.btn.active:focus,
+.btn:active.focus{
+    outline:none;
+}
+
 .btn {
     .sans-serif-font;
     border: none;
@@ -370,4 +378,15 @@ body {
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(255, 3, 3, 0.86);
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(255, 3, 3, 0.86);
+}
+
+.form-control{
+    border-radius:0;
+    border: 0px solid;
+}
+
+.form-control:focus{
+    -webkit-box-shadow: inset 0 0px 10px rgba(0,0,0,0.075),0px 0px 15px #6c6c6c;
+    box-shadow: inset 0 0px 10px rgba(0,0,0,0.075),0px 0px 15px #6c6c6c;
+    border: 0px solid;
 }

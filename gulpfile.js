@@ -6,6 +6,7 @@ var header = require('gulp-header');
 var cleanCSS = require('gulp-clean-css');
 var rename = require("gulp-rename");
 var uglify = require('gulp-uglify');
+var ts = require('gulp-typescript');
 var pkg = require('./package.json');
 
 // Set the banner content
@@ -18,7 +19,7 @@ var banner = ['/*!\n',
 ].join('');
 
 // Default task
-gulp.task('default', ['less', 'minify-css', 'minify-js', 'copy']);
+gulp.task('default', ['less', 'minify-css', 'minify-js','copy']);
 
 // Less task to compile the less files and add the banner
 gulp.task('less', function() {
@@ -52,6 +53,14 @@ gulp.task('minify-js', function() {
         .pipe(browserSync.reload({
             stream: true
         }))
+});
+
+gulp.task('typescript', function () {
+    return gulp.src('app/*.ts')
+        .pipe(ts({
+            declaration: true
+        }))
+        .pipe(gulp.dest('app'));
 });
 
 // Copy Bootstrap core files from node_modules to vendor directory
@@ -90,6 +99,7 @@ gulp.task('fontawesome', function() {
         ])
         .pipe(gulp.dest('vendor/font-awesome'))
 })
+
 
 // Copy all dependencies from node_modules
 gulp.task('copy', ['bootstrap', 'jquery', 'fontawesome', 'magnific-popup', 'scrollreveal']);
