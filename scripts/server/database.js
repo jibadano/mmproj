@@ -7,10 +7,8 @@
 
 /*	Global	*/
 var mongoose = require('mongoose');
-var async = require('async');
 
 var ObjectId = mongoose.Schema.Types.ObjectId;
-var Type = {string: 'str', boolean: 'boo', date: 'dat', list: 'lst'};
 var Status = {draft: 'dft', published: 'psh', finished: 'fsh', archived:'ach'};
 
 mongoose.connect('mongodb://localhost/database');
@@ -49,167 +47,151 @@ var userSchema = new mongoose.Schema({
 											about: String
 });
 
-
-
 /*	Models	*/
 var Field = mongoose.model('Field', fieldSchema);
 var Match = mongoose.model('Match', matchSchema);
 var User = mongoose.model('User', userSchema);
 
-
-
 /* Methods */
+//INSERT
 
-function findFields(fieldLike, then){
-	Field.find(fieldLike).exec(function(err, fieldsFound){
-		if(!fieldsFound)
-			return then('No fields found', null);
-		
-		then(err, fieldsFound);
-	});
+function insertUser(user, then){
+	new User(user).save(then);
 }
 
 function insertField(field, then){
-	var newField = new User(field);
-	newField.save(function(err){
-		then(err, newField);
-	});
+	new Field(field).save(then);
 }
 
-function existsUser(user, then){
-	User.findOne(user).
-	select('_id email').
-	exec(function(err, userFound){
-		then(err, userFound);
-	});
+function insertMatch(match, then){
+	new Match(match).save(then);
 }
 
-function insertUser(user, then){
-	var newUser = new User(user);
-	newUser.save(function(err){
-		then(err, newUser);
-	});
+//REMOVE
+
+function removeUser(user, then){
+	User.findOneAndRemove(user,then);
 }
 
-
-function findUser(user, then){
-	User.findOne(user).populate('groups.friends').exec(function(err, userFound){
-		if(!userFound)
-			return then('User not found', null);
-		
-		then(err, userFound);
-	});
+function removeField(field, then){
+	Field.findOneAndRemove(field,then);
 }
 
-function findUsers(userLike, then){
-	User.find(userLike).exec(function(err, usersFound){
-		if(!usersFound)
-			return then('No users found', null);
-		
-		then(err, usersFound);
-	});
+function removeMatch(match, then){
+	Match.findOneAndRemove(match,then);
+}
+
+//UPDATE 
+
+function updateMatch(match, then){
+	let id = match._id;
+	delete match._id;
+	Match.findOneAndUpdate({_id: id},match,then);
 }
 
 function updateUser(user, then){
-	var id = user._id;
+	let id = user._id;
 	delete user._id;
 	User.findOneAndUpdate({_id: id},user,
-	function(err, userUpdated){
+	(err, userUpdated)=>{
 		then(err, userUpdated != null);
 	});
 }
 
-function findMatchs(match,pagination, then){
-	
-	Match.find(match).populate('_field').populate('admins').skip(pagination.page * pagination.size).limit(pagination.size).
-	exec(function(err, matchsFound){
-		if(!matchsFound)
-			return then('No matchs found', null);
-		
-		then(err, matchsFound);
+//EXISTS
+
+function existsUser(user, then){
+	User.findOne(user).
+	select('email').
+	exec((err, userFound)=>{
+		then(err, userFound != null);
 	});
 }
 
-function findMatch(match, then){
-	Match.findOne(match).populate('_field').populate('players._user').populate('admins').
-	exec(function(err, matchFound){
-		if(!matchFound)
-			return then('Match not found', null);
-		
-		then(err, matchFound);
+function existsField(field, then){
+	Field.findOne(field).
+	select('name').
+	exec((err, fieldFound)=>{
+		then(err, fieldFound != null);
 	});
 }
 
 function existsMatch(match, then){
 	Match.findOne(match).
 	select('name').
-	exec(function(err, matchFound){
+	exec((err, matchFound)=>{
 		then(err, matchFound != null);
 	});
 }
 
+//FIND ONE
 
-function insertMatch(match, then){
-	var newMatch = new Match(match);
-	newMatch.save(function(err){
-		then(err, newMatch);
-	});
+function findUser(user, then){
+	User.findOne(user).
+	populate('groups.friends').
+	exec(then);
+}
+
+function findField(field, then){
+	Field.findOne(field).
+	exec(then);
+}
+
+function findMatch(match, then){
+	Match.findOne(match).
+	populate('_field').
+	populate('players._user').
+	populate('admins').
+	exec(then);
+}
+
+//FIND
+
+function findUsers(user, then){
+	User.find(user).exec(then);
+}
+
+function findFields(field, then){
+	Field.find(field).exec(then);
+}
+
+function findMatchs(match, pagination, then){
+	Match.find(match).
+	populate('_field').
+	populate('admins').
+	skip(pagination.page * pagination.size).
+	limit(pagination.size).
+	exec(then);
+}
+
+//OTHERS
+
+function findUserBasic(user, then){
+	User.findOne(user).
+	select('_id email').
+	exec(then);
 }
 
 
-function removeMatch(match, then){
-	Match.findOneAndRemove(match,
-	function(err, matchRemoved){
-		then(err, matchRemoved != null);
-	});
-}
 
-function updateMatch(match, then){
-	var id = match._id;
-	delete match._id;
-	Match.findOneAndUpdate({_id: id},match,
-	function(err, matchUpdated){
-		then(err, matchUpdated != null);
-	});
-}
-
-
-
-function reset(){
-
-	var transaction = [];
-
-	transaction.push(function(callback){
-		mongoose.connection.collections['questions'].drop(function(err){callback(null,'done');});
-	});
-	transaction.push(function(callback){
-		mongoose.connection.collections['surveys'].drop(function(err){callback(null,'done');});
-	});
-	transaction.push(function(callback){
-		mongoose.connection.collections['users'].drop(function(err){callback(null,'done');});
-	});
-	transaction.push(function(callback){
-		mongoose.connection.collections['answers'].drop(function(err){callback(null,'done');});
-	});
-	async.parallel(transaction, function(err, result) {
-	});
-}
 
 /* Exports */
 
+//User
+exports.findUserBasic = findUserBasic;
 exports.existsUser = existsUser;
 exports.insertUser = insertUser;
 exports.findUser = findUser;
 exports.findUsers = findUsers;
 exports.updateUser = updateUser;
 
+//Fields
 exports.findFields = findFields;
 exports.insertField = insertField;
 
-
+//Matchs
 exports.existsMatch = existsMatch;
 exports.insertMatch = insertMatch;
-
 exports.removeMatch = removeMatch;
 exports.updateMatch = updateMatch;
 exports.findMatchs = findMatchs;

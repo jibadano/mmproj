@@ -8,7 +8,7 @@
 
 function init(app){
 	var server = app.listen(app.locals.port,app.locals.host);
-	console.log('Survi is running at ' + app.locals.host + ':' + app.locals.port);
+	console.log('Server is running at ' + app.locals.host + ':' + app.locals.port);
 }
 
 exports.init = init;

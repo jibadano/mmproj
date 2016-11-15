@@ -14,7 +14,6 @@ function init(app,requestHandler){
 	app.post('/signin', requestHandler.signin);
 	app.post('/services', requestHandler.execService);
 	
-	
 }
 
 exports.init = init;

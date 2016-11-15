@@ -6,7 +6,7 @@
  */
 
 var database = require('./database');
-var async = require('async');
+var eh = require('./errorHandler');
 var atob = require('atob');
 
 function redirect(req, res){
@@ -19,51 +19,68 @@ function logout(req, res) {
 }
 
 function login(req, res) {
-	var enc_auth = req.headers.authorization;
-	var auth = atob(enc_auth.substring(6,enc_auth.length));
+	if(req.session.user)
+		return res.end(eh.USER.ALRDY_LOGGED_IN);
+
+	let enc_auth = req.headers.authorization;
+	let auth = atob(enc_auth.substring(6,enc_auth.length));
 	
-	var email = auth.split(':')[0];
-	var password = auth.split(':')[1];
+	let email = auth.split(':')[0];
+	let password = auth.split(':')[1];
 	
-	database.existsUser({email:email, password:password}, function(err, user){
-		if(user){
-			delete user.password;
-			req.session.user = user;
-		}
-		res.end((user || err)? JSON.stringify(user) : '{err: "Authentication failed"}');
+	database.findUserBasic({email:email, password:password}, (err, user) =>{
+		if(err)
+			return res.end(eh.DATABASE(err));
+
+		if(!user)
+			return res.end(eh.USER.AUTH_FAILED);
+
+		req.session.user = user;
+		res.end(JSON.stringify(user));
 	});
 }
 
 function signin(req, res) {
+	if(req.session.user)
+		return res.end(eh.USER.ALRDY_LOGGED_IN);
 
-	getData(req, function(authenticationData){
+	getData(req, (authenticationData)=>{
 		
 		try{
-			database.existsUser({email : authenticationData.user.email}, function(err, exists){
+			database.existsUser({email : authenticationData.user.email}, (err, exists)=>{
 				if(err)
-					return res.end(JSON.stringify({err:err}));
+					return res.end(eh.DATABASE(err));
 				
 				if(exists)
-					return res.end('err: "Username already exists"');
+					return res.end(eh.USER.ALRDY_EXTS);
 				
-				database.insertUser(authenticationData.user, function(err, user){
+				database.insertUser(authenticationData.user, (err, user)=>{
+					if(err)
+						return res.end(eh.DATABASE(err));
+
+					delete user.password;	
 					req.session.user = user;
-					return res.end((!user || err)? '{}' : '{err: "Registration failed"}');
+					res.end(JSON.stringify(user));
 				});
 			});
 		}
 		catch(e){
-			res.end(JSON.stringify(serviceExecution));
+			res.end(eh.GENERIC(err));
 		}
 	});
 }
 
 
 function execService(req, res) {
-	getData(req, function(serviceExecution){
-		
+
+	getData(req, (serviceExecution)=>{
+		if(!req.session.user){
+			serviceExecution.err = eh.USER.SESSION_EXPIRED;
+			return res.end(JSON.stringify(serviceExecution));
+		}
+
 		try{
-			services[serviceExecution.serviceId](req.session.user, serviceExecution.data, function(err, data){
+			services[serviceExecution.serviceId](req.session.user, serviceExecution.data, (err, data)=>{
 				serviceExecution.data = data;
 				if(err)
 					serviceExecution.err = err;
@@ -73,57 +90,111 @@ function execService(req, res) {
 		}
 		catch(e){
 			delete serviceExecution.data;
-			serviceExecution.err = 'ServiceId ' + serviceExecution.serviceId + ' ERROR ' + 'Exception: ' + e;
+			serviceExecution.err = eh.SERVICE_EXECUTION(e,serviceExecution.serviceId).err;
 			res.end(JSON.stringify(serviceExecution));
 		}
 	});
 }
 
+
+
 var services = {
-getFields : function (user, data,then){
-	database.findFields({name: {$regex: new RegExp('^.*' + data.fieldName + '.*$', "i")}},then);
-},
-getMatchs : function (user, data,then){
-	data.match.status = 'public';
-	database.findMatchs(data.match, data.pagination,then);
+
+getFields : function (user, data, then){
+	database.findFields({name: {$regex: new RegExp('^.*' + data.fieldName + '.*$', "i")}}, (err, fields)=>{
+		if(err)
+			then(eh.DATABASE(err),null);
+		
+		return then(null, fields);
+	});
 },
 
-getMyMatchs : function (user, data,then){
+getMatchs : function (user, data, then){
+	data.match.status = 'public';
+	database.findMatchs(data.match, data.pagination, (err, matches)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+		
+		return then(null, matches);
+	});
+},
+
+getMyMatchs : function (user, data, then){
 	data.match.admins = user._id;
-	database.findMatchs(data.match, data.pagination,then);
+	database.findMatchs(data.match, data.pagination, (err, matches)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+		
+		return then(null, matches);
+	});
 },
 
 getMatch : function (user, data, then){
-	database.findMatch({name: data.matchName},then);
+	//TODO puede buscar un match que sea privado
+	database.findMatch({name: data.matchName}, (err, match)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+		
+		if(!match)
+			return then(eh.MATCH.NOT_FOUND, null);
+
+		return then(null, match);
+	});
 },
 
 addMatch : function(user, data, then){
 	data.match.admins.push(user._id);
-	database.insertMatch(data.match, then);
+	database.existsMatch({name: data.matchName}, (err, exists)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+		
+		if(exists)
+			return then(eh.MATCH.ALRDY_EXTS, null);
+
+		database.insertMatch(data.match, function(err, match){
+			if(err)
+				return then(eh.DATABASE(err),null);
+				
+			return then(null,match);
+		});
+	});
 },
 
 remMatch : function(user, data, then){
-	database.removeMatch(data.match, then);
+	//TODO puede borrar cualquier match
+	database.removeMatch(data.match, (err, match)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+			
+		return then(null,match);
+	});
 },
 
-updMatch : function(user, data,then){
-	database.updateMatch(data.match, then);
+updMatch : function(user, data, then){
+	//TODO puede actualizar cualquier match
+	database.updateMatch(data.match, (err, match)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+			
+		return then(null,match);
+	});
 },
 
 confirmMatch : function(user, data,then){
-	data.match.players.forEach(function(player){
+	//TODO actualiza todo el match con lo que viene del servicio
+	data.match.players.forEach((player)=>{
 		if(player._user._id == user._id){
 			player.confirm = true;
 			database.updateMatch(data.match, then);
 		}
-	});
-	
+	});	
 },
 
 declineMatch : function(user, data,then){
-	data.match.players.forEach(function(player){
+	//TODO actualiza todo el match con lo que viene del servicio
+	data.match.players.forEach((player)=>{
 		if(player._user._id == user._id){
-			var i = data.match.players.indexOf(player);
+			let i = data.match.players.indexOf(player);
 			if( i > -1)
 				data.match.players.splice(i,1);
 			
@@ -140,33 +211,54 @@ getNextMatch : function(user, data){
 
 
 getCurrentUser : function(user, data, then){
-	return then('',user);
+	return then(null,user);
 },
 
 getUsers : function(user, data, then){
-	database.findUsers({email: {$regex: new RegExp('^.*' + data.user.email + '.*$', "i")}}, function(err, usersFound){
-		return then(err, usersFound);
+	database.findUsers({email: {$regex: new RegExp('^.*' + data.user.email + '.*$', "i")}}, (err, users)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+		
+		return then(null, users);
 	});
 },
 
 getGroups : function(user, data, then){
-	database.findUser({_id: user._id}, function(err, userFound){
-		return then(err, userFound.groups);
+	database.findUser({_id: user._id}, (err, userFound)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+
+		if(!userFound)
+			return then(eh.USER.NOT_FND,null);
+		
+		return then(null, userFound.groups);
 	});
 },
 
 addGroup : function(user, data, then){
-	database.findUser({_id: user._id},function(err, user){
+	database.findUser({_id: user._id}, (err, user)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+
+		if(!user)
+			return then(eh.USER.NOT_FND,null);
+
 		user.groups.push(data.group);
 		user.save();
-		return then(err, user);
 
+		return then(null, user);
 	});
 },
 
 addFriend : function(user, data, then){
-	database.findUser({_id: user._id},function(err, user){
-		user.groups.forEach(function(group){
+	database.findUser({_id: user._id},(err, user)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+
+		if(!user)
+			return then(eh.USER.NOT_FND,null);
+		
+		user.groups.forEach((group)=>{
 			if(group.name==data.groupName){
 				group.friends.push(data.friend);
 				user.save();
@@ -177,32 +269,48 @@ addFriend : function(user, data, then){
 },
 
 updGroups : function(user, data,then){
-	database.findUser({_id: user._id},function(err, user){
+	database.findUser({_id: user._id},(err, user)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+
+		if(!user)
+			return then(eh.USER.NOT_FND,null);
 		
 		user.groups = data.groups;
 		user.save();
-		then(err,user);
+		return then(null,user);
 	});
 },
 
 remFriend : function(user, data,then){
-	database.findUser({_id: user._id},function(err, user){
+	database.findUser({_id: user._id},(err, user)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+
+		if(!user)
+			return then(eh.USER.NOT_FND,null);
+		
 		user.groups.forEach(function(group){
 			if(group.name==data.groupName){
-				var index = group.friends.indexOf(data.friend);
+				let index = group.friends.indexOf(data.friend);
 				if(index != -1){
 					group.friends.splice(index,1);
 					user.save();
 				}
-				return then(err, user);
+				return then(null, user);
 			}
-			
 		});
 	});
 },
 
 remGroup : function(user, data,then){
-	database.findUser({_id: user._id},function(err, user){
+	database.findUser({_id: user._id},(err, user)=>{
+		if(err)
+			return then(eh.DATABASE(err),null);
+
+		if(!user)
+			return then(eh.USER.NOT_FND,null);
+		
 		user.groups.forEach(function(group){
 			if(group.name==data.groupName){
 				var index = user.groups.indexOf(group);
@@ -217,40 +325,17 @@ remGroup : function(user, data,then){
 }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //Private methods
 
 var getData = function(req, then){
 	var data = '';
-	req.on('data', function(chunk){
+	req.on('data', (chunk)=>{
 		 data+=chunk;
 	 });
 
-	req.addListener('end', function(){
+	req.addListener('end', ()=>{
 		then(JSON.parse(data));
 	});
-}
-
-var validSession =  function(session){
-	return (session.user_id != null);
-}
-
-var OK = function(then){
-	then();
-	return 'OK';
 }
 
 exports.logout = logout;
