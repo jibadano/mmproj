@@ -84,16 +84,16 @@ function removeMatch(match, then){
 //UPDATE 
 
 function updateMatch(match, then){
-	let id = match._id;
+	var id = match._id;
 	delete match._id;
 	Match.findOneAndUpdate({_id: id},match,then);
 }
 
 function updateUser(user, then){
-	let id = user._id;
+	var id = user._id;
 	delete user._id;
 	User.findOneAndUpdate({_id: id},user,
-	(err, userUpdated)=>{
+	function(err, userUpdated){
 		then(err, userUpdated != null);
 	});
 }
@@ -103,7 +103,7 @@ function updateUser(user, then){
 function existsUser(user, then){
 	User.findOne(user).
 	select('email').
-	exec((err, userFound)=>{
+	exec(function(err, userFound){
 		then(err, userFound != null);
 	});
 }
@@ -111,7 +111,7 @@ function existsUser(user, then){
 function existsField(field, then){
 	Field.findOne(field).
 	select('name').
-	exec((err, fieldFound)=>{
+	exec(function(err, fieldFound){
 		then(err, fieldFound != null);
 	});
 }
@@ -119,7 +119,7 @@ function existsField(field, then){
 function existsMatch(match, then){
 	Match.findOne(match).
 	select('name').
-	exec((err, matchFound)=>{
+	exec(function(err, matchFound){
 		then(err, matchFound != null);
 	});
 }

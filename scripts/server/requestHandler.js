@@ -22,13 +22,13 @@ function login(req, res) {
 	if(req.session.user)
 		return res.end(eh.USER.ALRDY_LOGGED_IN);
 
-	let enc_auth = req.headers.authorization;
-	let auth = atob(enc_auth.substring(6,enc_auth.length));
+	var enc_auth = req.headers.authorization;
+	var auth = atob(enc_auth.substring(6,enc_auth.length));
 	
-	let email = auth.split(':')[0];
-	let password = auth.split(':')[1];
+	var email = auth.split(':')[0];
+	var password = auth.split(':')[1];
 	
-	database.findUserBasic({email:email, password:password}, (err, user) =>{
+	database.findUserBasic({email:email, password:password}, function(err, user) {
 		if(err)
 			return res.end(eh.DATABASE(err));
 
@@ -44,17 +44,17 @@ function signin(req, res) {
 	if(req.session.user)
 		return res.end(eh.USER.ALRDY_LOGGED_IN);
 
-	getData(req, (authenticationData)=>{
+	getData(req, function(authenticationData){
 		
 		try{
-			database.existsUser({email : authenticationData.user.email}, (err, exists)=>{
+			database.existsUser({email : authenticationData.user.email}, function(err, exists){
 				if(err)
 					return res.end(eh.DATABASE(err));
 				
 				if(exists)
 					return res.end(eh.USER.ALRDY_EXTS);
 				
-				database.insertUser(authenticationData.user, (err, user)=>{
+				database.insertUser(authenticationData.user,function (err, user){
 					if(err)
 						return res.end(eh.DATABASE(err));
 
@@ -73,14 +73,14 @@ function signin(req, res) {
 
 function execService(req, res) {
 
-	getData(req, (serviceExecution)=>{
+	getData(req, function(serviceExecution){
 		if(!req.session.user){
 			serviceExecution.err = eh.USER.SESSION_EXPIRED;
 			return res.end(JSON.stringify(serviceExecution));
 		}
 
 		try{
-			services[serviceExecution.serviceId](req.session.user, serviceExecution.data, (err, data)=>{
+			services[serviceExecution.serviceId](req.session.user, serviceExecution.data, function(err, data){
 				serviceExecution.data = data;
 				if(err)
 					serviceExecution.err = err;
@@ -101,7 +101,7 @@ function execService(req, res) {
 var services = {
 
 getFields : function (user, data, then){
-	database.findFields({name: {$regex: new RegExp('^.*' + data.fieldName + '.*$', "i")}}, (err, fields)=>{
+	database.findFields({name: {$regex: new RegExp('^.*' + data.fieldName + '.*$', "i")}},function (err, fields){
 		if(err)
 			then(eh.DATABASE(err),null);
 		
@@ -111,7 +111,7 @@ getFields : function (user, data, then){
 
 getMatchs : function (user, data, then){
 	data.match.status = 'public';
-	database.findMatchs(data.match, data.pagination, (err, matches)=>{
+	database.findMatchs(data.match, data.pagination, function(err, matches){
 		if(err)
 			return then(eh.DATABASE(err),null);
 		
@@ -121,7 +121,7 @@ getMatchs : function (user, data, then){
 
 getMyMatchs : function (user, data, then){
 	data.match.admins = user._id;
-	database.findMatchs(data.match, data.pagination, (err, matches)=>{
+	database.findMatchs(data.match, data.pagination,function (err, matches){
 		if(err)
 			return then(eh.DATABASE(err),null);
 		
@@ -131,7 +131,7 @@ getMyMatchs : function (user, data, then){
 
 getMatch : function (user, data, then){
 	//TODO puede buscar un match que sea privado
-	database.findMatch({name: data.matchName}, (err, match)=>{
+	database.findMatch({name: data.matchName}, function(err, match){
 		if(err)
 			return then(eh.DATABASE(err),null);
 		
@@ -144,7 +144,7 @@ getMatch : function (user, data, then){
 
 addMatch : function(user, data, then){
 	data.match.admins.push(user._id);
-	database.existsMatch({name: data.matchName}, (err, exists)=>{
+	database.existsMatch({name: data.matchName}, function(err, exists){
 		if(err)
 			return then(eh.DATABASE(err),null);
 		
@@ -162,7 +162,7 @@ addMatch : function(user, data, then){
 
 remMatch : function(user, data, then){
 	//TODO puede borrar cualquier match
-	database.removeMatch(data.match, (err, match)=>{
+	database.removeMatch(data.match, function(err, match){
 		if(err)
 			return then(eh.DATABASE(err),null);
 			
@@ -172,7 +172,7 @@ remMatch : function(user, data, then){
 
 updMatch : function(user, data, then){
 	//TODO puede actualizar cualquier match
-	database.updateMatch(data.match, (err, match)=>{
+	database.updateMatch(data.match, function(err, match){
 		if(err)
 			return then(eh.DATABASE(err),null);
 			
@@ -182,7 +182,7 @@ updMatch : function(user, data, then){
 
 confirmMatch : function(user, data,then){
 	//TODO actualiza todo el match con lo que viene del servicio
-	data.match.players.forEach((player)=>{
+	data.match.players.forEach(function(player){
 		if(player._user._id == user._id){
 			player.confirm = true;
 			database.updateMatch(data.match, then);
@@ -192,9 +192,9 @@ confirmMatch : function(user, data,then){
 
 declineMatch : function(user, data,then){
 	//TODO actualiza todo el match con lo que viene del servicio
-	data.match.players.forEach((player)=>{
+	data.match.players.forEach(function(player){
 		if(player._user._id == user._id){
-			let i = data.match.players.indexOf(player);
+			var i = data.match.players.indexOf(player);
 			if( i > -1)
 				data.match.players.splice(i,1);
 			
@@ -215,7 +215,7 @@ getCurrentUser : function(user, data, then){
 },
 
 getUsers : function(user, data, then){
-	database.findUsers({email: {$regex: new RegExp('^.*' + data.user.email + '.*$', "i")}}, (err, users)=>{
+	database.findUsers({email: {$regex: new RegExp('^.*' + data.user.email + '.*$', "i")}}, function(err, users){
 		if(err)
 			return then(eh.DATABASE(err),null);
 		
@@ -224,7 +224,7 @@ getUsers : function(user, data, then){
 },
 
 getGroups : function(user, data, then){
-	database.findUser({_id: user._id}, (err, userFound)=>{
+	database.findUser({_id: user._id}, function(err, userFound){
 		if(err)
 			return then(eh.DATABASE(err),null);
 
@@ -236,7 +236,7 @@ getGroups : function(user, data, then){
 },
 
 addGroup : function(user, data, then){
-	database.findUser({_id: user._id}, (err, user)=>{
+	database.findUser({_id: user._id}, function(err, user){
 		if(err)
 			return then(eh.DATABASE(err),null);
 
@@ -251,14 +251,14 @@ addGroup : function(user, data, then){
 },
 
 addFriend : function(user, data, then){
-	database.findUser({_id: user._id},(err, user)=>{
+	database.findUser({_id: user._id},function(err, user){
 		if(err)
 			return then(eh.DATABASE(err),null);
 
 		if(!user)
 			return then(eh.USER.NOT_FND,null);
 		
-		user.groups.forEach((group)=>{
+		user.groups.forEach(function(group){
 			if(group.name==data.groupName){
 				group.friends.push(data.friend);
 				user.save();
@@ -269,7 +269,7 @@ addFriend : function(user, data, then){
 },
 
 updGroups : function(user, data,then){
-	database.findUser({_id: user._id},(err, user)=>{
+	database.findUser({_id: user._id},function(err, user){
 		if(err)
 			return then(eh.DATABASE(err),null);
 
@@ -283,7 +283,7 @@ updGroups : function(user, data,then){
 },
 
 remFriend : function(user, data,then){
-	database.findUser({_id: user._id},(err, user)=>{
+	database.findUser({_id: user._id},function(err, user){
 		if(err)
 			return then(eh.DATABASE(err),null);
 
@@ -292,7 +292,7 @@ remFriend : function(user, data,then){
 		
 		user.groups.forEach(function(group){
 			if(group.name==data.groupName){
-				let index = group.friends.indexOf(data.friend);
+				var index = group.friends.indexOf(data.friend);
 				if(index != -1){
 					group.friends.splice(index,1);
 					user.save();
@@ -304,7 +304,7 @@ remFriend : function(user, data,then){
 },
 
 remGroup : function(user, data,then){
-	database.findUser({_id: user._id},(err, user)=>{
+	database.findUser({_id: user._id},function(err, user){
 		if(err)
 			return then(eh.DATABASE(err),null);
 
@@ -329,11 +329,11 @@ remGroup : function(user, data,then){
 
 var getData = function(req, then){
 	var data = '';
-	req.on('data', (chunk)=>{
+	req.on('data', function(chunk){
 		 data+=chunk;
 	 });
 
-	req.addListener('end', ()=>{
+	req.addListener('end',function (){
 		then(JSON.parse(data));
 	});
 }

@@ -10,5 +10,6 @@
         "**/app/*.js":true,
         "**/.gitignore":true
     },
-    "editor.scrollBeyondLastLine": false
+    "editor.scrollBeyondLastLine": false,
+    "typescript.check.workspaceVersion": false
 }
