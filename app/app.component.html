@@ -14,11 +14,12 @@
 <home *ngIf="!services.user.email" (loginSuccess)="services.user = $event"></home>
 
 
-  <section id="about">
+  <section *ngIf="services.user.email" id="about">
         <div class="container">
             <div class="row">
 				<dashboard *ngIf="services.user.email && nav=='dashboard'" ></dashboard>
 				<groups *ngIf="nav=='groups'" (return)="nav = $event" ></groups>
+				<admin *ngIf="nav=='admin'" (return)="nav = $event" ></admin>
 			</div>
         </div>
     </section>

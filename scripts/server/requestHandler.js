@@ -99,7 +99,22 @@ function execService(req, res) {
 
 
 var services = {
-
+addUser : function (user, data, then){
+	database.insertUser(data.user,function(err,user){
+		if(err)
+			then(eh.DATABASE(err),null);
+		
+		return then(null, '');
+	});
+},
+addField : function (user, data, then){
+	database.insertField(data.field,function(err,field){
+		if(err)
+			then(eh.DATABASE(err),null);
+		
+		return then(null, '');
+	});
+},
 getFields : function (user, data, then){
 	database.findFields({name: {$regex: new RegExp('^.*' + data.fieldName + '.*$', "i")}},function (err, fields){
 		if(err)

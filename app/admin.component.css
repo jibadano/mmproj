@@ -8,10 +8,23 @@ h3 {
   text-align: center; margin-bottom: 0;
 }
 
+td{
+  width:150px;
+  text-align:left;
+}
+
+input{
+  width:100%;
+}
+
+
+
 .grid {
   margin: 0;
 }
-
+.col-1-4 {
+  width: 25%;
+}
 .module {
 	padding: 20px;
 	text-align: center;
@@ -29,12 +42,7 @@ h4 {
   cursor: pointer;
   color: #607d8b;
 }
-.grid-pad {
-  padding: 10px 0;
-}
-.grid-pad > [class*='col-']:last-of-type {
-  padding-right: 20px;
-}
+
 @media (max-width: 600px) {
 	.module {
 	  font-size: 10px;
@@ -77,66 +85,39 @@ tr.selected:hover {
 }
 
 .list-group.search-popup{
-  position:fixed;
+  position:absolute;
   color:#ccc;
 }
 
-.simple-row{
-  border-bottom: 1px solid #ccc;
+.btn-input{
+    margin-top: 4px;
+    height: 25px;
+    position: absolute;
+    margin-left: 88%;
+}
+
+tbody {
+    overflow-y: auto;
+    display: block;
+    height: 250px;
+    width:100%;
+}
+
+tbody > tr{
+    width: 100%;
+    display: table;
+}
+
+.table-buttons {
+  text-align: right;
+}
+
+.player-input{
   display:flex;
-  width:100%;
-  height:30px;
-  cursor:pointer;
 }
 
-.full-row{
-  border-bottom: 1px solid #ccc;
-  display:flex;
-   width:100%;
-   background-color: rgba(234,234,234,0.2);
-  color:#fff;
-}
-
-.full-row > div > .title{
-  font-size:38px;
-  height:60px;
-  padding-left: 5px;
-}
-
-.full-row > div > div > button{
-  margin-top:10px;
-  margin-left:auto;
-  margin-right:auto;
-}
-
-.full-row .data{
-  height:30px;
-  font-size:18px;
-  padding-left: 10px
-}
-
-.simple-row > .title{
-  width:38%;
-  font-size:25px;
-  padding-left: 5px;
-  margin-top:-5px
-}
-
-.simple-row  .data{
-  width:20%;
-  font-size:16px;
-  padding:4px;
-  padding-left: 10px
-
-}
-.simple-row  .icon{
-  width:2%;
-  font-size:16px;
-  padding:4px;
-}
-
-.full-row i{
-  padding-right:3px;
+.btn-footer{
+  margin-bottom:40px;
 }
 /*
 Copyright 2016 Google Inc. All Rights Reserved.

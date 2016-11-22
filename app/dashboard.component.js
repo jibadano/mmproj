@@ -21,6 +21,19 @@ var DashboardComponent = (function () {
         this.nav = 'allMatchs';
         this.pagination = new pagination_1.Pagination();
     }
+    DashboardComponent.prototype.menu = function (option) {
+        switch (option) {
+            case 'Add Match': {
+                this.nav = 'newMatch';
+            }
+        }
+    };
+    DashboardComponent.prototype.searchMatch = function (m) {
+        var _this = this;
+        this.services.exec("getMatch", { matchName: m.name }).then(function (match) {
+            _this.selectedMatch = match;
+        });
+    };
     DashboardComponent.prototype.showMatchs = function () {
         var _this = this;
         var matchsType = this.nav == 'myMatchs' ? 'getMyMatchs' : 'getMatchs';

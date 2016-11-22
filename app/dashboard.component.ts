@@ -24,6 +24,20 @@ export class DashboardComponent implements OnInit {
 
   constructor(private services: AppService) {}
 
+	menu(option : string){
+		switch(option){
+			case 'Add Match':{
+				this.nav = 'newMatch';
+			}
+		}
+	}
+
+	searchMatch(m: Match){
+		this.services.exec("getMatch",{matchName:m.name}).then( match =>{
+			this.selectedMatch = match;
+		});
+	}
+
   showMatchs(){
 		let matchsType = this.nav == 'myMatchs'? 'getMyMatchs' : 'getMatchs';
 

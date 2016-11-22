@@ -208,4 +208,13 @@ onKeyEventUser(event){
     this.buildForm();
   }
 
+	menu(option: string){
+		switch(option){
+			case 'Done': this.addMatch('public');break;
+			case 'Save': this.addMatch('draft');break;
+			case 'Cancel': this.return.emit(false);break;
+			default: this.return.emit(false);break;
+		}
+	}
+
 }

@@ -176,6 +176,22 @@ var NewMatchComponent = (function () {
     NewMatchComponent.prototype.ngOnInit = function () {
         this.buildForm();
     };
+    NewMatchComponent.prototype.menu = function (option) {
+        switch (option) {
+            case 'Done':
+                this.addMatch('public');
+                break;
+            case 'Save':
+                this.addMatch('draft');
+                break;
+            case 'Cancel':
+                this.return.emit(false);
+                break;
+            default:
+                this.return.emit(false);
+                break;
+        }
+    };
     __decorate([
         core_1.Input(), 
         __metadata('design:type', match_1.Match), 

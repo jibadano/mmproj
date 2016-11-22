@@ -39,6 +39,7 @@ var matchSchema = new mongoose.Schema({
 var userSchema = new mongoose.Schema({
 											email: {type:String, required:true, unique:true},
 											password: {type:String, required:true},
+											admin:Boolean,
 											firstname: String,
 											lastname: String,
 											groups:[{name: String, friends: [{ type:ObjectId, ref: 'User'}]}],

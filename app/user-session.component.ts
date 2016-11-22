@@ -11,6 +11,7 @@ import './rxjs-extensions';
             <button *ngIf="showMenu" (click)="return.emit('groups');showMenu = false" type="button" class="btn btn-primary" ><i class="fa fa-users"></i></button>
             <button *ngIf="showMenu" (click)="return.emit('config');showMenu = false" type="button" class="btn btn-primary" ><i class="fa fa-gear"></i></button>
             <button *ngIf="showMenu" (click)="return.emit('help');showMenu = false" type="button" class="btn btn-primary" ><i class="fa fa-question"></i></button>
+            <button *ngIf="showMenu" (click)="return.emit('admin');showMenu = false" type="button" class="btn btn-primary" ><i class="fa fa-chevron-up"></i></button>
             <button type="button" (click)="logOut.emit();showMenu = false" class="btn btn-primary" ><i class="fa fa-power-off"></i></button>
         </div>
     `

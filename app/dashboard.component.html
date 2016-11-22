@@ -1,6 +1,6 @@
 <div *ngIf="nav=='myMatchs' || nav=='allMatchs'">
 	<div class="row">
-		<menu [menuOptions]="['Add Match', 'Remove Match']" (optionSelected)="console.log($event)"></menu>
+		<menu [menuOptions]="['Add Match']" (optionSelected)="menu($event)"></menu>
 	</div>
 	<div class="row" style="display:flex">
 		<h1 style="color: white;
@@ -8,41 +8,88 @@
     margin-right: 40px;">Dashboard</h1>
 		<div style="display:block">
 		<div class="btn-group" style="width:100%">
-			<button type="button" class="btn btn-xs btn-primary" ><i class="fa fa-filter"></i></button>
+			<button  *ngIf="!filter" type="button" class="btn btn-xs btn-primary" (click)="filter=true;sort=false;search=false" ><i class="fa fa-filter"></i></button>
+			<button *ngIf="filter" type="button" class="btn btn-xs btn-primary" (click)="filter=false;nav = 'allMatchs';pagination.rewind(); showMatchs()" >All matchs</button>
+			<button *ngIf="filter" type="button" class="btn btn-xs btn-primary" (click)="filter=false;nav = 'myMatchs';pagination.rewind(); showMatchs()">My matchs</button>
+			<button  *ngIf="filter" (click)="filter=false" type="button" class="btn btn-xs btn-primary" ><i class="fa fa-chevron-left"></i></button>
 		</div>
 		<div class="btn-group" style="width:100%">
-			<button type="button" class="btn btn-xs btn-primary" ><i class="fa fa-sort"></i></button>
+			<button *ngIf="!sort" type="button" class="btn btn-xs btn-primary" (click)="sort=true;filter=false;search=false;"><i class="fa fa-sort"></i></button>
+			<button *ngIf="sort" type="button" class="btn btn-xs btn-primary" >Date</button>
+			<button *ngIf="sort" type="button" class="btn btn-xs btn-primary" >Location</button>
+			<button *ngIf="sort" type="button" class="btn btn-xs btn-primary" >Players</button>
+			<button  *ngIf="sort" (click)="sort=false" type="button" class="btn btn-xs btn-primary" ><i class="fa fa-chevron-left"></i></button>
 		</div>
 		<div class="btn-group" style="width:100%">
-			<button type="button" class="btn btn-xs btn-primary" ><i class="fa fa-search"></i></button>
+			<button *ngIf="!search" type="button" class="btn btn-xs btn-primary" (click)="search=true;filter=false;sort=false;"  ><i class="fa fa-search"></i></button>
+			<button *ngIf="search" type="button" class="btn btn-xs btn-primary" ><input type="text"/></button>
+			<button *ngIf="search" (click)="search=false" type="button" class="btn btn-xs btn-primary" ><i class="fa fa-chevron-left"></i></button>
 		</div>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col-lg-12 text-left">
 			<div>
-				<div class="input-inline">
-					<div class="btn-group">
-						<button type="button" class="btn btn-primary" (click)="nav = 'allMatchs';pagination.rewind(); showMatchs()">All</button>
-						<button type="button" class="btn btn-primary" (click)="nav = 'myMatchs';pagination.rewind(); showMatchs()">My matchs</button>
+				<div *ngFor="let match of matchs" style="display:flex" >
+					<div class="simple-row" *ngIf="!focus || selectedMatch.name!=match.name" (click)="focus=true; searchMatch(match)">
+						<div class="icon">
+							<i *ngIf="match.status=='private'" class="fa fa-lock"></i>
+							<i *ngIf="match.status=='public'" class="fa fa-globe"></i>
+							<i *ngIf="match.status=='playing'" class="fa fa-futbol-o"></i>
+							<i *ngIf="match.status=='draft'" class="fa fa-pencil-square-o"></i>
+						</div>
+						<div class="title">{{match.name}}</div>
+						<div class="data"><i class="fa fa-map-marker"></i> {{match._field.name}}</div>
+						<div class="data"><i class="fa fa-clock-o"></i> {{match.date | date:'short'}}</div>
+						<div class="data">{{match.players.length}}/{{2*match._field.size}}</div>
 					</div>
-				</div>
-				<div *ngFor="let match of matchs" [class.selected]="match === selectedMatch" style="display:flex" (click)="selectedMatch = match">
-					<div style="width:20%">{{match.name}}</div>
-					<div style="width:15%">{{match._field.name}}</div>
-					<div style="width:20%">{{match.date | date:'short'}}</div>
-					<div style="width:10%">{{match.players.length}}/{{2*match._field.size}}</div>
-					<div style="width:15%">{{match.status}}</div>
-					<div style="width:15%">
-						<div class="btn-group">
-							<button (click)="selectedMatch = match; nav = 'viewMatch'" type="button" class="btn btn-sm btn-primary"><i class="fa fa-chevron-right"></i></button>
-							<button (click)="selectedMatch = match; nav = 'editMatch'" type="button" class="btn-sm btn btn-primary"><i class="fa fa-pencil"></i></button>
-							<button type="button" (click)="removeMatch(match);" class="btn btn-sm btn-primary"><i class="fa fa-close"></i></button>
+					<div class="full-row"  *ngIf="focus && selectedMatch.name==match.name">
+						<div style="width:40%">
+							<div class="title">{{selectedMatch.name}}</div>
+							<div style="display:flex">
+								<div style="width:50%">
+									<div class="data"><i class="fa fa-map-marker"></i>{{selectedMatch._field.name}}</div>
+									<div class="data"><i class="fa fa-clock-o"></i>{{selectedMatch.date | date:'short'}}</div>
+								</div>
+								<div style="width:50%">
+									<div class="data"><i class="fa fa-users"></i>{{selectedMatch.players.length}}/{{2*selectedMatch._field.size}}</div>
+									
+									
+									<div class="data">
+										
+										<div class="icon">
+											<i *ngIf="match.status=='private'" class="fa fa-lock"></i>
+											<i *ngIf="match.status=='public'" class="fa fa-globe"></i>
+											<i *ngIf="match.status=='playing'" class="fa fa-futbol-o"></i>
+											<i *ngIf="match.status=='draft'" class="fa fa-pencil-square-o"></i>
+											{{selectedMatch.status}}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div style="width:15%">
+							<button (click)="selectedMatch = match; nav = 'viewMatch'" type="button" class="btn btn-sm btn-primary">Play</button>
+							<button (click)="selectedMatch = match; nav = 'editMatch'" type="button" class="btn-sm btn btn-primary">Edit</button>
+							<button type="button" (click)="removeMatch(match);" class="btn btn-sm btn-primary">Remove</button>
+						</div>
+						<div style="width:25%">
+							<div style="overflow-y:auto;height:120px">
+								<table class="table table-condensed">
+									<tbody>
+										<tr *ngFor="let player of selectedMatch.players">
+											<td>{{player._user.email}}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div style="width:25%">
+							<div style="height:120px">
+								<map [field]="selectedMatch._field">Loading...</map>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div class="btn-group">
-					<button type="button" class="btn btn-primary" (click)="nav = 'newMatch'">Add</button>
 				</div>
 				<div class="btn-group">
 					<button type="button" class="btn btn-primary" [class.disabled]="pagination.page==0"><a href="#" class="fa fa-chevron-left" (click)="pagination.previous(); showMatchs()"></a></button>
@@ -51,12 +98,6 @@
 			</div>
 		</div>
 	</div>
-
-	<!--div class="col-lg-3 text-center">
-		<div class="row">
-			<map [field]="selectedMatch._field">Loading...</map>
-		</div>
-	</div-->
 </div>
 <new-match *ngIf="nav == 'newMatch'" (return)="nav = 'allMatchs';  showMatchs()">Loading...</new-match>
 <new-match *ngIf="nav == 'editMatch'" (return)="nav = 'allMatchs';  showMatchs()" [match]="selectedMatch">Loading...</new-match>

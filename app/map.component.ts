@@ -9,7 +9,7 @@ declare var google: any;
 
 @Component({
   selector: 'map',
-  template: '<div id="googleMap" style="width:100%;height:250px;margin-bottom:40px"></div>',
+  template: '<div id="googleMap" style="width:100%;height:120px;margin-bottom:40px"></div>',
   styleUrls: []
 })
 

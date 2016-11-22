@@ -57,7 +57,7 @@ var MapComponent = (function () {
     MapComponent = __decorate([
         core_1.Component({
             selector: 'map',
-            template: '<div id="googleMap" style="width:100%;height:250px;margin-bottom:40px"></div>',
+            template: '<div id="googleMap" style="width:100%;height:120px;margin-bottom:40px"></div>',
             styleUrls: []
         }), 
         __metadata('design:paramtypes', [])

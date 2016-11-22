@@ -14,6 +14,7 @@ import { NewMatchComponent }   from './new-match.component';
 import { ViewMatchComponent }   from './view-match.component';
 import { GroupsComponent }   from './groups.component';
 import { MenuComponent }   from './menu.component';
+import { AdminComponent }   from './admin.component';
 
 import { AppService }   from './app.service';
 
@@ -35,7 +36,8 @@ import { AppService }   from './app.service';
     NewMatchComponent,
     GroupsComponent,
     ViewMatchComponent,
-    MenuComponent
+    MenuComponent,
+    AdminComponent
   ],
    providers: [
     AppService
